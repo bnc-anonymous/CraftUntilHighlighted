@@ -21,9 +21,17 @@ Install using **PluginUpdater**:
 
 The plugin will use the currency with a randomised delay until the item is highlighted. You can then click again yourself to roll past a match. Move the cursor out of the square to stop.
 
-| Ready | Crafting | Highlighted |
-| --- | --- | --- |
-| ![The square on the item, before a run](images/1.jpg) | ![The square while crafting](images/2.jpg) | ![The square once the search highlights the item](images/3.jpg) |
+**Ready**
+
+![The square on the item, before a run](images/1.jpg)
+
+**Crafting**
+
+![The square while crafting](images/2.jpg)
+
+**Highlighted**
+
+![The square once the search highlights the item](images/3.jpg)
 
 ## Finding modifier names
 
