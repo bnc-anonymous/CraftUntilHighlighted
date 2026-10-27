@@ -25,6 +25,10 @@ The plugin will use the currency with a randomised delay until the item is highl
 | --- | --- | --- |
 | ![The square on the item, before a run](images/1.jpg) | ![The square while crafting](images/2.jpg) | ![The square once the search highlights the item](images/3.jpg) |
 
+## Finding modifier names
+
+The stash search can match a modifier's name. To find the name for a modifier, open the item class on poe2db, for example [Rings](https://poe2db.tw/Rings#ModifiersCalc), click the modifier you want and use the name of the tier you are after. For example, the top tier of increased Rarity of Items found on a ring is "Hoarder's". Separate several names with `|`, as in the search above: `"Hoarder's|Smiting"` would match T1 #% increased Rarity of Items found or T1 #% increased Lightning Damage.
+
 ## License
 
 MIT
