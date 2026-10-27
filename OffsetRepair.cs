@@ -8,9 +8,9 @@ namespace CraftUntilHighlighted;
 /// the plugin keeps working until Offsets is updated.
 ///
 /// A moved offset reads some other number, which is very unlikely to be the hash of any currency. So when a currency is
-/// selected and CursorSelectedItemTypeHashOffset names none, the cursor element is searched for 4-byte values that name
+/// selected and CursorSelectedBaseItemTypeHashOffset names none, the cursor element is searched for 4-byte values that name
 /// a currency, once per selection. If they all name one currency, the first offset it was found at becomes
-/// CursorSelectedItemTypeHashOffset for the rest of the session, and the move is logged once. If they name two, or none,
+/// CursorSelectedBaseItemTypeHashOffset for the rest of the session, and the move is logged once. If they name two, or none,
 /// nothing changes, the selection goes unnamed, and the craft square does not appear. The dump's Cursor section shows
 /// the offset in use, what it named, and what the last search did.
 /// </summary>
@@ -28,22 +28,22 @@ internal static class OffsetRepair
     private static int _searchedForAction = int.MinValue;
 
     /// <summary>
-    /// Where the selected item type hash is read: Offsets.CursorSelectedItemTypeHash, or where the last search found it
+    /// Where the selected base item type hash is read: Offsets.CursorSelectedBaseItemTypeHash, or where the last search found it
     /// this session.
     /// </summary>
-    public static int CursorSelectedItemTypeHashOffset { get; private set; } = Offsets.CursorSelectedItemTypeHash;
+    public static int CursorSelectedBaseItemTypeHashOffset { get; private set; } = Offsets.CursorSelectedBaseItemTypeHash;
 
     /// <summary>What the last search did, for the dump. Empty until one has run.</summary>
     public static string LastSearch { get; private set; } = "";
 
     /// <summary>
-    /// Searches the cursor element, 4 bytes at a time, for the selected stack's item type hash, after
-    /// CursorSelectedItemTypeHashOffset read none. When every value found names the same currency, moves
-    /// CursorSelectedItemTypeHashOffset to the first and returns its hash; otherwise, or when this selection was searched
+    /// Searches the cursor element, 4 bytes at a time, for the selected stack's base item type hash, after
+    /// CursorSelectedBaseItemTypeHashOffset read none. When every value found names the same currency, moves
+    /// CursorSelectedBaseItemTypeHashOffset to the first and returns its hash; otherwise, or when this selection was searched
     /// already, returns 0. Up to SearchBytes / 4 dictionary lookups. currencyMetadataOfHash returns the metadata of the
     /// currency a hash names, or null for anything else.
     /// </summary>
-    public static uint FindCursorSelectedItemTypeHash(GameController gc, Func<uint, string> currencyMetadataOfHash)
+    public static uint FindCursorSelectedBaseItemTypeHash(GameController gc, Func<uint, string> currencyMetadataOfHash)
     {
         var action = Safe.Read(gc, static g => (int)g.IngameState.IngameUi.Cursor.Action, 0);
 
@@ -61,7 +61,7 @@ internal static class OffsetRepair
         if (bytes == null || bytes.Length < SearchBytes)
             return 0u;
 
-        var failedOffset = CursorSelectedItemTypeHashOffset;
+        var failedOffset = CursorSelectedBaseItemTypeHashOffset;
         string foundMetadata = null;
         var foundHash = 0u;
         var foundAt = -1;
@@ -93,10 +93,10 @@ internal static class OffsetRepair
             return 0u;
         }
 
-        CursorSelectedItemTypeHashOffset = foundAt;
+        CursorSelectedBaseItemTypeHashOffset = foundAt;
         LastSearch = $"+0x{failedOffset:X} named no currency; moved to +0x{foundAt:X} ({foundMetadata})";
         DebugWindow.LogMsg($"[CraftUntilHighlighted] The selected currency's offset looked moved by a patch: {LastSearch}. " +
-                           "Update Offsets.CursorSelectedItemTypeHash.", 30f);
+                           "Update Offsets.CursorSelectedBaseItemTypeHash.", 30f);
 
         return foundHash;
     }

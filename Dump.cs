@@ -171,19 +171,19 @@ internal static class Dump
               $"clicks {Safe.Read(cursor, static c => c.Clicks, -1)}, text \"{Safe.Read(cursor, static c => c.Text, "")}\", " +
               $"action sound \"{Safe.Read(cursor, static c => c.ActionSound, "?")}\"");
 
-        var selected = SelectedCurrency.ItemTypeIfSelected(gc);
-        var hash = SelectedCurrency.ItemTypeHashOnCursor(gc);
+        var selected = SelectedCurrency.BaseItemTypeIfSelected(gc);
+        var hash = SelectedCurrency.BaseItemTypeHashOnCursor(gc);
 
         b.AppendLine($"  currency selected: {Safe.Read(selected, static t => t?.BaseName, null) ?? "none"} " +
                      $"({Safe.Read(selected, static t => t?.Metadata, null) ?? "-"}), on Allowed currencies: " +
-                     $"{SelectedCurrency.IsAllowed(selected, settings)}; item type hash at " +
-                     $"+0x{OffsetRepair.CursorSelectedItemTypeHashOffset:X} 0x{hash:X8} names " +
-                     $"{Safe.Read(SelectedCurrency.ItemTypeOfHash(gc, hash), static t => t?.BaseName, null) ?? "nothing"}" +
+                     $"{SelectedCurrency.IsAllowed(selected, settings)}; base item type hash at " +
+                     $"+0x{OffsetRepair.CursorSelectedBaseItemTypeHashOffset:X} 0x{hash:X8} names " +
+                     $"{Safe.Read(SelectedCurrency.BaseItemTypeOfHash(gc, hash), static t => t?.BaseName, null) ?? "nothing"}" +
                      (OffsetRepair.LastSearch.Length > 0 ? $"; offset repair: {OffsetRepair.LastSearch}" : ""));
 
         // The cursor element and what is under it, with each element's texture and entity. None of it names a right-clicked
         // currency (dumps 2026-10-27 10:49: no texture, no entity, the same for all three Chaos Orbs), which is why
-        // SelectedCurrency reads the item type hash raw; kept because a picked-up item reads as a child here with its entity
+        // SelectedCurrency reads the base item type hash raw; kept because a picked-up item reads as a child here with its entity
         // (a tablet, AutoExpedition, 2026-10-13).
         b.AppendLine($"  IngameUi.Cursor element: {DescribeElement(cursor)}");
         DescribeChildren(b, cursor, "    ", 0, 4);

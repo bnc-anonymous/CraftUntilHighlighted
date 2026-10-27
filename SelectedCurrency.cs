@@ -12,7 +12,7 @@ namespace CraftUntilHighlighted;
 /// ExileCore2 does not name the selection. A right-clicked stack stays where it is and the Cursor1 inventory stays
 /// empty; IngameUi.Cursor.ActionString is per kind of action, the same "reroll" for Chaos, Greater Chaos and Perfect
 /// Chaos Orbs; and IngameUi.Cursor.Action holds the selected stack's ItemVersion, not its kind (dumps 2026-10-26 and
-/// 2026-10-27). So the selection comes from the selected stack's item type hash, read off the cursor element at the offset
+/// 2026-10-27). So the selection comes from the selected stack's base item type hash, read off the cursor element at the offset
 /// in Offsets (as OffsetRepair has it this session), looked up with Files.BaseItemTypes.GetByHash and taken only when it
 /// names a currency (metadata under Metadata/Items/Currency/). A selection that cannot be named is never allowed.
 /// </summary>
@@ -29,24 +29,24 @@ internal static class SelectedCurrency
     /// <summary>Each Allowed currencies line as a compiled pattern, or null where it is not a valid regular expression.</summary>
     private static readonly Dictionary<string, Regex> PatternOfLine = new(StringComparer.Ordinal);
 
-    /// <summary>The item type of the currency right-clicked for use, or null when none is selected or it cannot be named.</summary>
-    public static BaseItemType ItemTypeIfSelected(GameController gc)
+    /// <summary>The base item type of the currency right-clicked for use, or null when none is selected or it cannot be named.</summary>
+    public static BaseItemType BaseItemTypeIfSelected(GameController gc)
     {
         if (string.IsNullOrEmpty(Safe.Read(gc, static g => g.IngameState.IngameUi.Cursor?.ActionString, "")))
             return null;
 
         // Naming no currency while one is selected is how a moved offset shows; OffsetRepair looks for it once per selection.
-        return CurrencyOfHash(gc, ItemTypeHashOnCursor(gc)) ??
-               CurrencyOfHash(gc, OffsetRepair.FindCursorSelectedItemTypeHash(gc,
+        return CurrencyOfHash(gc, BaseItemTypeHashOnCursor(gc)) ??
+               CurrencyOfHash(gc, OffsetRepair.FindCursorSelectedBaseItemTypeHash(gc,
                    h => Safe.Read(CurrencyOfHash(gc, h), static t => t?.Metadata, null)));
     }
 
     /// <summary>Whether a currency is right-clicked for use and it is on the Allowed currencies list.</summary>
     public static bool AllowedIsSelected(GameController gc, CraftUntilHighlightedSettings settings) =>
-        IsAllowed(ItemTypeIfSelected(gc), settings);
+        IsAllowed(BaseItemTypeIfSelected(gc), settings);
 
     /// <summary>
-    /// Whether an item type is on the Allowed currencies list: some line, as a regular expression ignoring case, matches
+    /// Whether a base item type is on the Allowed currencies list: some line, as a regular expression ignoring case, matches
     /// the whole of its base name or the whole of its metadata path. Whole, so "Chaos Orb" does not also allow the Perfect
     /// Chaos Orb; ".* Catalyst" allows every catalyst. A line that is not a valid regular expression matches nothing.
     /// </summary>
@@ -71,26 +71,26 @@ internal static class SelectedCurrency
     }
 
     /// <summary>
-    /// The uint at OffsetRepair.CursorSelectedItemTypeHashOffset in the cursor element: the selected stack's item type
+    /// The uint at OffsetRepair.CursorSelectedBaseItemTypeHashOffset in the cursor element: the selected stack's base item type
     /// hash while a currency is selected (see Offsets). 0 when it cannot be read.
     /// </summary>
-    public static uint ItemTypeHashOnCursor(GameController gc)
+    public static uint BaseItemTypeHashOnCursor(GameController gc)
     {
         var memory = Safe.Read(gc, static g => g.Memory, null);
         var cursorAddress = Safe.Read(gc, static g => g.IngameState.IngameUi.Cursor.Address, 0L);
 
         return memory == null || cursorAddress == 0L
             ? 0u
-            : Safe.Read(() => memory.Read<uint>(cursorAddress + OffsetRepair.CursorSelectedItemTypeHashOffset), 0u);
+            : Safe.Read(() => memory.Read<uint>(cursorAddress + OffsetRepair.CursorSelectedBaseItemTypeHashOffset), 0u);
     }
 
-    /// <summary>The item type a BaseItemTypes hash names, or null.</summary>
-    public static BaseItemType ItemTypeOfHash(GameController gc, uint hash) =>
+    /// <summary>The base item type a BaseItemTypes hash names, or null.</summary>
+    public static BaseItemType BaseItemTypeOfHash(GameController gc, uint hash) =>
         hash == 0u ? null : Safe.Read(() => gc.Files.BaseItemTypes.GetByHash(hash), null);
 
-    /// <summary>The currency item type a hash names, or null when it names nothing or something that is not currency.</summary>
+    /// <summary>The currency base item type a hash names, or null when it names nothing or something that is not currency.</summary>
     private static BaseItemType CurrencyOfHash(GameController gc, uint hash) =>
-        ItemTypeOfHash(gc, hash) is { } itemType &&
+        BaseItemTypeOfHash(gc, hash) is { } itemType &&
         Safe.Read(itemType, static t => t.Metadata, "").StartsWith(CurrencyPath, StringComparison.Ordinal)
             ? itemType
             : null;

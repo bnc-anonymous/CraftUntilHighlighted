@@ -8,7 +8,7 @@ namespace CraftUntilHighlighted;
 
 /// <summary>
 /// The dump's raw view of the cursor element, for repairing Offsets after a patch: every 4 bytes of its first ProbeBytes
-/// tried as a BaseItemTypes hash, with the ones that name an item type listed, then the bytes 8 at a time, each split
+/// tried as a BaseItemTypes hash, with the ones that name a base item type listed, then the bytes 8 at a time, each split
 /// into two ints, with any readable text a pointer leads to. Reads only, and only when a dump is written. See Offsets for
 /// how to use it.
 /// </summary>
@@ -43,8 +43,8 @@ internal static class RawCursorProbe
         }
 
         // Every 4 bytes tried as a BaseItemTypes hash: the offset whose line names the selected currency is
-        // Offsets.CursorSelectedItemTypeHash. A dictionary lookup each, so the whole element costs little.
-        b.AppendLine($"  4-byte values that name an item type (Offsets.CursorSelectedItemTypeHash is +0x{Offsets.CursorSelectedItemTypeHash:X}):");
+        // Offsets.CursorSelectedBaseItemTypeHash. A dictionary lookup each, so the whole element costs little.
+        b.AppendLine($"  4-byte values that name a base item type (Offsets.CursorSelectedBaseItemTypeHash is +0x{Offsets.CursorSelectedBaseItemTypeHash:X}):");
 
         var named = 0;
 
@@ -52,7 +52,7 @@ internal static class RawCursorProbe
         {
             var value = BitConverter.ToUInt32(bytes, offset);
 
-            if (SelectedCurrency.ItemTypeOfHash(gc, value) is not { } itemType)
+            if (SelectedCurrency.BaseItemTypeOfHash(gc, value) is not { } itemType)
                 continue;
 
             named++;
